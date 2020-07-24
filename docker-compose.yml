@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  rotator:
+    container_name: image-rotator
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python rotate.py $OVERWRITE_FILES
+    volumes:
+      - .:/app
