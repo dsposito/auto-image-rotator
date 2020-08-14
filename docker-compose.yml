@@ -1,8 +1,9 @@
 version: "3.8"
 
 services:
-  rotator:
-    container_name: image-rotator
+  app:
+    container_name: auto-image-rotator-app
+    image: auto-image-rotator-app
     build:
       context: .
       dockerfile: Dockerfile
