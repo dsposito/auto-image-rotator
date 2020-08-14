@@ -63,7 +63,7 @@ class Rotator:
         """Saves the rotated image using Pillow."""
 
         if not self.overwrite_files:
-            filename = filename.replace(".", "-rotated.")
+            filename = filename.replace(".", "-rotated.", 1)
 
         return image.save(Path(self.IMAGES_DIRECTORY + "/" + filename))
 
