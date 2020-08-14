@@ -7,7 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: python rotate.py ${OVERWRITE_FILES}
+    command: python rotate.py ${OVERWRITE_FILES:-0}
     volumes:
       - .:/app
       - ${IMAGES_PATH}:/images
