@@ -9,7 +9,7 @@ from PIL import Image, ImageFile
 
 
 class Rotator:
-    IMAGES_DIRECTORY = "images"
+    IMAGES_DIRECTORY = "/images"
 
     def __init__(self, overwrite_files: bool=False):
         self.detector = dlib.get_frontal_face_detector()
