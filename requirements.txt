@@ -1,3 +1,4 @@
+click==7.1.2
 dlib==19.20.0
 numpy==1.19.1
 opencv-python==4.3.0.36

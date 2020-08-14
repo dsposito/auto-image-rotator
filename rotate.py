@@ -1,4 +1,4 @@
-import argparse
+import click
 import cv2
 import dlib
 import numpy as np
@@ -16,20 +16,26 @@ class Rotator:
         self.overwrite_files =overwrite_files
 
     def analyze_images(self):
-        for filename in os.listdir(self.IMAGES_DIRECTORY):
-            if not filename.endswith(".jpeg"):
-                continue
+        rotations = {}
+        with click.progressbar(os.listdir(self.IMAGES_DIRECTORY), label="Analyzing Images...") as files:
+            for filename in files:
+                if not filename.endswith(".jpeg"):
+                    continue
 
-            image = self.open_image(filename)
+                image = self.open_image(filename)
+                rotation = self.analyze_image(image, filename)
 
-            self.analyze_image(image, filename)
+                if rotation:
+                    rotations[filename] = rotation
 
-    def analyze_image(self, image: ImageFile, filename: str) -> bool:
+        print(f"{len(rotations)} Images Rotated")
+        for filename, rotation in rotations.items():
+            print(f" - {filename} (Rotated {rotation} Degrees)")
+
+    def analyze_image(self, image: ImageFile, filename: str) -> int:
         """Cycles through 4 image rotations of 90 degrees.
            Saves the image at the current rotation if faces are detected.
         """
-
-        print(f"ANALYZING IMAGE: {filename}")
 
         for cycle in range(0, 4):
             if cycle > 0:
@@ -43,13 +49,12 @@ class Rotator:
             if len(faces) == 0:
                 continue
 
+            # Save the image only if it has been rotated.
             if cycle > 0:
-                print(f"ROTATING IMAGE: {filename}, {cycle * 90} Degrees\n")
-                return self.save_image(image, filename)
-            else:
-                return False
+                self.save_image(image, filename)
+                return cycle * 90
 
-        return False
+        return 0
 
     def open_image(self, filename: str) -> ImageFile:
         """Intentionally opens an image file using Pillow.
@@ -65,13 +70,19 @@ class Rotator:
         if not self.overwrite_files:
             filename = filename.replace(".", "-rotated.", 1)
 
-        return image.save(Path(self.IMAGES_DIRECTORY + "/" + filename))
+        try:
+            image.save(Path(self.IMAGES_DIRECTORY + "/" + filename))
+            return True
+        except:
+            return False
+
+
+@click.command()
+@click.argument("overwrite_files", type=click.BOOL, default=False)
+def cli(overwrite_files: bool=False):
+    rotator = Rotator(overwrite_files)
+    rotator.analyze_images()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Attempts to auto rotate images to their proper orientation.")
-    parser.add_argument("overwrite_files", nargs="?", type=int, default=0, help="Whether to use the same filename when saving rotated images.")
-    args = parser.parse_args()
-
-    rotator = Rotator(bool(args.overwrite_files))
-    rotator.analyze_images()
+    cli()
