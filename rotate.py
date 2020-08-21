@@ -16,23 +16,31 @@ class Rotator:
         self.overwrite_files =overwrite_files
 
     def analyze_images(self):
-        rotations = {}
-        with click.progressbar(os.listdir(self.IMAGES_DIRECTORY), label="Analyzing Images...") as files:
-            for filename in files:
-                if not filename.endswith(".jpeg"):
-                    continue
+        # Recursively loop through all files and subdirectories.
+        # os.walk() is a recursive generator.
+        # The variable "root" is dynamically updated as walk() recursively traverses directories.
+        images = []
+        for root_dir, sub_dir, files in os.walk(self.IMAGES_DIRECTORY):
+            for file_name in files:
+                if file_name.lower().endswith((".jpeg", ".jpg", ".png")):
+                    file_path = str(os.path.join(root_dir, file_name))
+                    images.append(file_path)
 
-                image = self.open_image(filename)
-                rotation = self.analyze_image(image, filename)
+        # Analyze each image file path - rotating when needed.
+        rotations = {}
+        with click.progressbar(images, label="Analyzing Images...") as filepaths:
+            for filepath in filepaths:
+                image = self.open_image(filepath)
+                rotation = self.analyze_image(image, filepath)
 
                 if rotation:
-                    rotations[filename] = rotation
+                    rotations[filepath] = rotation
 
         print(f"{len(rotations)} Images Rotated")
-        for filename, rotation in rotations.items():
-            print(f" - {filename} (Rotated {rotation} Degrees)")
+        for filepath, rotation in rotations.items():
+            print(f" - {filepath} (Rotated {rotation} Degrees)")
 
-    def analyze_image(self, image: ImageFile, filename: str) -> int:
+    def analyze_image(self, image: ImageFile, filepath: str) -> int:
         """Cycles through 4 image rotations of 90 degrees.
            Saves the image at the current rotation if faces are detected.
         """
@@ -51,27 +59,27 @@ class Rotator:
 
             # Save the image only if it has been rotated.
             if cycle > 0:
-                self.save_image(image, filename)
+                self.save_image(image, filepath)
                 return cycle * 90
 
         return 0
 
-    def open_image(self, filename: str) -> ImageFile:
+    def open_image(self, filepath: str) -> ImageFile:
         """Intentionally opens an image file using Pillow.
            If opened with OpenCV, the saved image is a much larger file size than the original
            (regardless of whether saved via OpenCV or Pillow).
         """
 
-        return Image.open(Path(self.IMAGES_DIRECTORY + "/" + filename))
+        return Image.open(filepath)
 
-    def save_image(self, image: ImageFile, filename: str) -> bool:
+    def save_image(self, image: ImageFile, filepath: str) -> bool:
         """Saves the rotated image using Pillow."""
 
         if not self.overwrite_files:
-            filename = filename.replace(".", "-rotated.", 1)
+            filepath = filepath.replace(".", "-rotated.", 1)
 
         try:
-            image.save(Path(self.IMAGES_DIRECTORY + "/" + filename))
+            image.save(filepath)
             return True
         except:
             return False
