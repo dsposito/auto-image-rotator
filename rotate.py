@@ -28,7 +28,7 @@ class Rotator:
 
         # Analyze each image file path - rotating when needed.
         rotations = {}
-        with click.progressbar(images, label="Analyzing Images...") as filepaths:
+        with click.progressbar(images, label=f"Analyzing {len(images)} Images...") as filepaths:
             for filepath in filepaths:
                 image = self.open_image(filepath)
                 rotation = self.analyze_image(image, filepath)
