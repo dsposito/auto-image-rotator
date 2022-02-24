@@ -1,7 +1,7 @@
 FROM python:3.8
 
 # Update package lists and install CMake (for compiling Dlib).
-RUN apt-get -y update && apt-get -y install build-essential cmake
+RUN apt-get -y update && apt-get -y install build-essential cmake python3-opencv
 
 # Set the container's working directory.
 WORKDIR /app
